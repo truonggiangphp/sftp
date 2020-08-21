@@ -138,7 +138,7 @@ class Sftp
                 # Delete directory content
                 if (Sftp::cleanDir($remote_path, $sftp)) {
                     # If remote_path do not ends with /
-                    if (!WString::ends_with($remote_path, '/')) {
+                    if (!WString::endsWith($remote_path, '/')) {
                         # Delete directory itself
                         if ($sftp->rmdir($remote_path)) {
                             $deleted = true;
@@ -225,7 +225,7 @@ class Sftp
 
             if (false !== $sftp = Sftp::login($server, $user, $password, $port)) {
                 # If local_path do not ends with /
-                if (!WString::ends_with($local_path, '/')) {
+                if (!WString::endsWith($local_path, '/')) {
                     # Create fisrt level directory on remote filesystem
                     $remote_path = $remote_path . DIRECTORY_SEPARATOR . basename($local_path);
                     $sftp->mkdir($remote_path);
@@ -358,7 +358,7 @@ class Sftp
             if (is_dir($local_dir) && is_writable($local_dir)) {
                 if (false !== $sftp = Sftp::login($server, $user, $password, $port)) {
                     # If remote_dir do not ends with /
-                    if (!WString::ends_with($remote_dir, '/')) {
+                    if (!WString::endsWith($remote_dir, '/')) {
                         # Create fisrt level directory on local filesystem
                         $local_dir = rtrim($local_dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . basename($remote_dir);
                         mkdir($local_dir);

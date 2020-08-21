@@ -11,20 +11,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="564f560f-1058-4e04-bf9a-38a421a079fd" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/composer.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/composer.lock" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/test.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/test.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Webike/Sftp/Sftp.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/Hug/Sftp/SftpTest.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/sftp.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sftp.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Webike/Sftp/Sftp.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Webike/Sftp/Sftp.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="ComposerSettings">
+  <component name="ComposerSettings" synchronizationState="SYNCHRONIZE">
+    <pharConfigPath>$PROJECT_DIR$/composer.json</pharConfigPath>
     <execution />
   </component>
   <component name="Git.Settings">
@@ -53,7 +50,8 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1597983241036</updated>
-      <workItem from="1597983242134" duration="426000" />
+      <workItem from="1597983242134" duration="665000" />
+      <workItem from="1597984536845" duration="30000" />
     </task>
     <servers />
   </component>
@@ -70,11 +68,12 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="541" y="280" width="598" height="490" key="find.popup" timestamp="1597983658640">
+    <state x="541" y="280" width="598" height="490" key="find.popup" timestamp="1597983702860">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state x="541" y="280" width="598" height="490" key="find.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1597983658640" />
+    <state x="541" y="280" width="598" height="490" key="find.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1597983702860" />
   </component>
 </project>
