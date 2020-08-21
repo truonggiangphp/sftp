@@ -167,6 +167,29 @@ class Sftp
     }
 
     /**
+     * @param $remotePath
+     * @return array
+     */
+    public function getAllFiles($remotePath)
+    {
+        $files = [];
+        $list = $this->sftp->nlist($remotePath);
+        foreach ($list as $element) {
+            if ($element !== '.' && $element !== '..') {
+                if ($this->sftp->is_dir($remotePath . DIRECTORY_SEPARATOR . $element)) {
+                    # Empty directory
+                    foreach ($this->getAllFiles($remotePath . DIRECTORY_SEPARATOR . $element) as $fileSubFolder) {
+                        $files[] = $fileSubFolder;
+                    }
+                } else {
+                    $files[] = $element;
+                }
+            }
+        }
+        return $files;
+    }
+
+    /**
      * Recursively copy files and folders on remote SFTP server
      *
      * If local_path ends with a slash upload folder content
