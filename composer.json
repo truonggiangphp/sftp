@@ -1,6 +1,8 @@
 {
   "name": "webikevn/sftp",
   "description": "PHP SFTP Utilities",
+  "keywords": ["laravel", "laravel-sftp"],
+  "license": "MIT",
   "authors": [
     {
       "name": "Nguyen Giang",
