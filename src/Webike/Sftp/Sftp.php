@@ -360,41 +360,40 @@ class Sftp
      * Recursive function to download remote files
      *
      * @param ressource $sftp
-     * @param string $remote_dir
-     * @param string $local_dir
-     *
+     * @param $remoteDir
+     * @param $localDir
      * @return bool $downloaded
      *
      * @throws DownloadAllException
      */
-    private static function downloadAll($sftp, $remote_dir, $local_dir)
+    private static function downloadAll($sftp, $remoteDir, $localDir)
     {
-        $download_all = false;
+        $downloadAll = false;
 
         try {
-            if ($sftp->is_dir($remote_dir)) {
-                $files = $sftp->nlist($remote_dir);
+            if ($sftp->is_dir($remoteDir)) {
+                $files = $sftp->nlist($remoteDir);
                 if ($files !== false) {
-                    $to_download = 0;
+                    $toDownload = 0;
                     $downloaded = 0;
                     # do this for each file in the remote directory 
                     foreach ($files as $file) {
                         // error_log('file : ' . $file);
                         # To prevent an infinite loop 
                         if ($file != "." && $file != "..") {
-                            $to_download++;
+                            $toDownload++;
                             # do the following if it is a directory 
-                            if ($sftp->is_dir($remote_dir . DIRECTORY_SEPARATOR . $file)) {
+                            if ($sftp->is_dir($remoteDir . DIRECTORY_SEPARATOR . $file)) {
                                 # Create directory on local filesystem
-                                mkdir($local_dir . DIRECTORY_SEPARATOR . basename($file));
+                                mkdir($localDir . DIRECTORY_SEPARATOR . basename($file));
 
                                 # Recursive part 
-                                if (Sftp::downloadAll($sftp, $remote_dir . DIRECTORY_SEPARATOR . $file, $local_dir . DIRECTORY_SEPARATOR . basename($file))) {
+                                if (Sftp::downloadAll($sftp, $remoteDir . DIRECTORY_SEPARATOR . $file, $localDir . DIRECTORY_SEPARATOR . basename($file))) {
                                     $downloaded++;
                                 }
                             } else {
                                 # Download files 
-                                if ($sftp->get($remote_dir . DIRECTORY_SEPARATOR . $file, $local_dir . DIRECTORY_SEPARATOR . basename($file))) {
+                                if ($sftp->get($remoteDir . DIRECTORY_SEPARATOR . $file, $localDir . DIRECTORY_SEPARATOR . basename($file))) {
                                     $downloaded++;
                                 }
                             }
@@ -402,19 +401,19 @@ class Sftp
                     }
 
                     # Check all files and folders have been downloaded
-                    if ($to_download === $downloaded) {
-                        $download_all = true;
+                    if ($toDownload === $downloaded) {
+                        $downloadAll = true;
                     }
                 } else {
                     # Nothing to download
-                    $download_all = true;
+                    $downloadAll = true;
                 }
             }
         } catch (Exception $e) {
             throw new DownloadAllException($e);
         }
 
-        return $download_all;
+        return $downloadAll;
     }
 
     /**
@@ -520,7 +519,7 @@ class Sftp
      * @param string $path
      * @return array $files Files listed in directory or false
      */
-    public function scandir($path)
+    public function scanDir($path)
     {
         $files = $this->sftp->nlist($path);
         if (is_array($files)) {
