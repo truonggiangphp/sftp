@@ -8,6 +8,8 @@ use phpseclib\Net\SFTP as SecFtp;
 
 class Sftp
 {
+    /** @var SecFtp */
+    protected $sftp = false;
 
     /**
      * Login to SFTP server
@@ -16,23 +18,20 @@ class Sftp
      * @param string $user
      * @param string $password
      * @param int $port
-     *
-     * @return false|SecFtp $sftp
+     * @return self
      */
-    private static function login($server, $user, $password, $port = 22)
+    public function login($server, $user, $password, $port = 22)
     {
-        $sftp = false;
-
         try {
-            $sftp = new SecFtp($server, $port);
-            if (!$sftp->login($user, $password)) {
-                $sftp = false;
+            $this->sftp = new SecFtp($server, $port);
+            if (!$this->sftp->login($user, $password)) {
+                $this->sftp = false;
             }
         } catch (Exception $e) {
             error_log("SFtp::login : " . $e->getMessage());
         }
 
-        return $sftp;
+        return $this;
     }
 
     /**
@@ -43,69 +42,45 @@ class Sftp
      * @param string $password
      *
      * @param int $port
-     * @return bool $test
+     * @return bool
      */
-    public static function test($server, $user, $password, $port = 22)
+    public function test($server, $user, $password, $port = 22)
     {
-        $test = false;
-
-        if (false !== $sftp = Sftp::login($server, $user, $password, $port)) {
-            $test = true;
-        }
-
-        return $test;
+        $this->login($server, $user, $password, $port);
+        return $this->sftp;
     }
 
     /**
      * Check if a file exists on SFTP Server
      *
-     * @param string $server
-     * @param string $user
-     * @param string $password
-     * @param string $remote_file
-     * @param int $port
-     *
+     * @param string $remoteFile
      * @return bool $is_file
      */
-    public static function isFile($server, $user, $password, $remote_file, $port = 22)
+    public function isFile($remoteFile)
     {
-        $is_file = false;
+        $isFile = false;
         try {
-            if (false !== $sftp = Sftp::login($server, $user, $password, $port)) {
-                if ($sftp->isFile($remote_file)) {
-                    $is_file = true;
-                }
-            }
+            $isFile = $this->sftp->isFile($remoteFile);
         } catch (Exception $e) {
             error_log("Sftp::is_file : " . $e->getMessage());
         }
 
-        return $is_file;
+        return $isFile;
     }
 
     /**
      * Delete a file on remote SFTP server
      *
-     * @param string $server
-     * @param string $user
-     * @param string $password
-     * @param string $remote_file
-     * @param int $port
-     *
+     * @param $remoteFile
      * @return bool $deleted
-     *
      */
-    public static function delete($server, $user, $password, $remote_file, $port = 22)
+    public function delete($remoteFile)
     {
         $deleted = false;
 
         try {
-            if (false !== $sftp = Sftp::login($server, $user, $password, $port)) {
-                if ($sftp->isFile($remote_file)) {
-                    if ($sftp->delete($remote_file)) {
-                        $deleted = true;
-                    }
-                }
+            if ($this->sftp->isFile($remoteFile)) {
+                $deleted = $this->sftp->delete($remoteFile);
             }
         } catch (Exception $e) {
             error_log("Sft::delete : " . $e->getMessage());
@@ -120,32 +95,24 @@ class Sftp
      * If remote_path ends with a slash delete folder content
      * otherwise delete folder itself
      *
-     * @param string $server
-     * @param string $user
-     * @param string $password
-     * @param string $remote_path
-     * @param int $port
-     *
+     * @param $remotePath
      * @return bool $deleted
-     *
      */
-    public static function rmdir($server, $user, $password, $remote_path, $port = 22)
+    public function rmdir($remotePath)
     {
         $deleted = false;
 
         try {
-            if (false !== $sftp = Sftp::login($server, $user, $password, $port)) {
-                # Delete directory content
-                if (Sftp::cleanDir($remote_path, $sftp)) {
-                    # If remote_path do not ends with /
-                    if (!WString::endsWith($remote_path, '/')) {
-                        # Delete directory itself
-                        if ($sftp->rmdir($remote_path)) {
-                            $deleted = true;
-                        }
-                    } else {
+            # Delete directory content
+            if (Sftp::cleanDir($remotePath, $this->sftp)) {
+                # If remote_path do not ends with /
+                if (!WString::endsWith($remotePath, '/')) {
+                    # Delete directory itself
+                    if ($this->sftp->rmdir($remotePath)) {
                         $deleted = true;
                     }
+                } else {
+                    $deleted = true;
                 }
             }
         } catch (Exception $e) {
@@ -158,41 +125,41 @@ class Sftp
     /**
      * Recursively deletes files and folder
      *
-     * @param string $remote_path
+     * @param $remotePath
      * @param resource $sftp
      *
      * @return bool $clean
      */
-    private static function cleanDir($remote_path, $sftp)
+    private static function cleanDir($remotePath, $sftp)
     {
         $clean = false;
 
-        $to_delete = 0;
+        $toDelete = 0;
         $deleted = 0;
 
-        $list = $sftp->nlist($remote_path);
+        $list = $sftp->nlist($remotePath);
         foreach ($list as $element) {
             if ($element !== '.' && $element !== '..') {
-                $to_delete++;
+                $toDelete++;
 
-                if ($sftp->is_dir($remote_path . DIRECTORY_SEPARATOR . $element)) {
+                if ($sftp->is_dir($remotePath . DIRECTORY_SEPARATOR . $element)) {
                     # Empty directory
-                    Sftp::cleanDir($remote_path . DIRECTORY_SEPARATOR . $element, $sftp);
+                    Sftp::cleanDir($remotePath . DIRECTORY_SEPARATOR . $element, $sftp);
 
                     # Delete empty directory
-                    if ($sftp->rmdir($remote_path . DIRECTORY_SEPARATOR . $element)) {
+                    if ($sftp->rmdir($remotePath . DIRECTORY_SEPARATOR . $element)) {
                         $deleted++;
                     }
                 } else {
                     # Delete file
-                    if ($sftp->delete($remote_path . DIRECTORY_SEPARATOR . $element)) {
+                    if ($sftp->delete($remotePath . DIRECTORY_SEPARATOR . $element)) {
                         $deleted++;
                     }
                 }
             }
         }
 
-        if ($deleted === $to_delete) {
+        if ($deleted === $toDelete) {
             $clean = true;
         }
 
@@ -205,35 +172,26 @@ class Sftp
      * If local_path ends with a slash upload folder content
      * otherwise upload folder itself
      *
-     * @param string $server
-     * @param string $user
-     * @param string $password
-     * @param string $local_path
-     * @param string $remote_path
-     * @param int $port
-     *
+     * @param $localPath
+     * @param $remotePath
      * @return bool $uploaded
-     *
      */
-    public static function uploadDir($server, $user, $password, $local_path, $remote_path, $port = 22)
+    public function uploadDir($localPath, $remotePath)
     {
         $uploaded = false;
-
         try {
             # Remove trailing slash
-            $remote_path = rtrim($remote_path, DIRECTORY_SEPARATOR);
+            $remotePath = rtrim($remotePath, DIRECTORY_SEPARATOR);
 
-            if (false !== $sftp = Sftp::login($server, $user, $password, $port)) {
-                # If local_path do not ends with /
-                if (!WString::endsWith($local_path, '/')) {
-                    # Create fisrt level directory on remote filesystem
-                    $remote_path = $remote_path . DIRECTORY_SEPARATOR . basename($local_path);
-                    $sftp->mkdir($remote_path);
-                }
+            # If local_path do not ends with /
+            if (!WString::endsWith($localPath, '/')) {
+                # Create fisrt level directory on remote filesystem
+                $remotePath = $remotePath . DIRECTORY_SEPARATOR . basename($localPath);
+                $this->sftp->mkdir($remotePath);
+            }
 
-                if ($sftp->is_dir($remote_path)) {
-                    $uploaded = Sftp::uploadAll($sftp, $local_path, $remote_path);
-                }
+            if ($this->sftp->is_dir($remotePath)) {
+                $uploaded = Sftp::uploadAll($this->sftp, $localPath, $remotePath);
             }
         } catch (Exception $e) {
             error_log("Sftp::upload_dir : " . $e->getMessage());
@@ -246,45 +204,43 @@ class Sftp
      * Recursively copy files and folders on remote SFTP server
      *
      * @param SFTP $sftp
-     * @param string $local_dir
-     * @param string $remote_dir
-     *
+     * @param $localDir
+     * @param $remoteDir
      * @return bool $uploaded_all
-     *
      */
-    private static function uploadAll($sftp, $local_dir, $remote_dir)
+    private static function uploadAll($sftp, $localDir, $remoteDir)
     {
-        $uploaded_all = false;
+        $uploadedAll = false;
         try {
             # Create remote directory
-            if (!$sftp->is_dir($remote_dir)) {
-                if (!$sftp->mkdir($remote_dir)) {
+            if (!$sftp->is_dir($remoteDir)) {
+                if (!$sftp->mkdir($remoteDir)) {
                     throw new Exception("Cannot create remote directory.", 1);
                 }
             }
 
-            $to_upload = 0;
+            $toUpload = 0;
             $uploaded = 0;
 
-            $d = dir($local_dir);
+            $d = dir($localDir);
             while ($file = $d->read()) {
                 if ($file != "." && $file != "..") {
-                    $to_upload++;
+                    $toUpload++;
 
-                    if (is_dir($local_dir . DIRECTORY_SEPARATOR . $file)) {
+                    if (is_dir($localDir . DIRECTORY_SEPARATOR . $file)) {
                         # Upload directory
                         # Recursive part
                         if (Sftp::uploadAll(
                             $sftp,
-                            $local_dir . DIRECTORY_SEPARATOR . $file,
-                            $remote_dir . DIRECTORY_SEPARATOR . $file)) {
+                            $localDir . DIRECTORY_SEPARATOR . $file,
+                            $localDir . DIRECTORY_SEPARATOR . $file)) {
                             $uploaded++;
                         }
                     } else {
                         # Upload file
                         if ($sftp->put(
-                            $remote_dir . DIRECTORY_SEPARATOR . $file,
-                            $local_dir . DIRECTORY_SEPARATOR . $file,
+                            $remoteDir . DIRECTORY_SEPARATOR . $file,
+                            $localDir . DIRECTORY_SEPARATOR . $file,
                             SecFtp::SOURCE_LOCAL_FILE)) {
                             $uploaded++;
                         }
@@ -293,39 +249,31 @@ class Sftp
             }
             $d->close();
 
-            if ($to_upload === $uploaded) {
-                $uploaded_all = true;
+            if ($toUpload === $uploaded) {
+                $uploadedAll = true;
             }
         } catch (Exception $e) {
             error_log("Sftp::upload_all : " . $e->getMessage());
         }
 
-        return $uploaded_all;
+        return $uploadedAll;
     }
 
     /**
      * Download a file from remote SFTP server
      *
-     * @param string $server
-     * @param string $user
-     * @param string $password
-     * @param string $remote_file
-     * @param string $local_file
-     * @param int $port
-     *
+     * @param $remoteFile
+     * @param $localFile
      * @return bool $downloaded
-     *
      */
-    public static function download($server, $user, $password, $remote_file, $local_file, $port = 22)
+    public function download($remoteFile, $localFile)
     {
         $downloaded = false;
 
         try {
-            if (false !== $sftp = Sftp::login($server, $user, $password, $port)) {
-                # Download File
-                if ($sftp->get($remote_file, $local_file)) {
-                    $downloaded = true;
-                }
+            # Download File
+            if ($this->sftp->get($remoteFile, $localFile)) {
+                $downloaded = true;
             }
         } catch (Exception $e) {
             error_log("Sftp::download : " . $e->getMessage());
@@ -340,36 +288,28 @@ class Sftp
      * If remote_dir ends with a slash download folder content
      * otherwise download folder itself
      *
-     * @param string $server
-     * @param string $user
-     * @param string $password
-     * @param string $remote_dir
-     * @param string $local_dir
-     * @param int $port
-     *
+     * @param $remoteDir
+     * @param $localDir
      * @return bool $downloaded
-     *
      */
-    public static function downloadDir($server, $user, $password, $remote_dir, $local_dir, $port = 22)
+    public function downloadDir($remoteDir, $localDir)
     {
         $downloaded = false;
 
         try {
-            if (is_dir($local_dir) && is_writable($local_dir)) {
-                if (false !== $sftp = Sftp::login($server, $user, $password, $port)) {
-                    # If remote_dir do not ends with /
-                    if (!WString::endsWith($remote_dir, '/')) {
-                        # Create fisrt level directory on local filesystem
-                        $local_dir = rtrim($local_dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . basename($remote_dir);
-                        mkdir($local_dir);
-                    }
-
-                    # Remove trailing slash
-                    $local_dir = rtrim($local_dir, DIRECTORY_SEPARATOR);
-
-                    # Recursive part
-                    $downloaded = Sftp::downloadAll($sftp, $remote_dir, $local_dir);
+            if (is_dir($localDir) && is_writable($localDir)) {
+                # If remote_dir do not ends with /
+                if (!WString::endsWith($remoteDir, '/')) {
+                    # Create fisrt level directory on local filesystem
+                    $local_dir = rtrim($localDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . basename($remoteDir);
+                    mkdir($localDir);
                 }
+
+                # Remove trailing slash
+                $localDir = rtrim($localDir, DIRECTORY_SEPARATOR);
+
+                # Recursive part
+                $downloaded = Sftp::downloadAll($this->sftp, $remoteDir, $localDir);
             } else {
                 throw new Exception("Local directory does not exist or is not writable", 1);
             }
@@ -443,25 +383,17 @@ class Sftp
     /**
      * Rename a file on remote SFTP server
      *
-     * @param string $server
-     * @param string $user
-     * @param string $password
-     * @param string $current_filename
-     * @param string $new_filename
-     * @param int $port
-     *
+     * @param $currentFilename
+     * @param $newFilename
      * @return bool $renamed
-     *
      */
-    public static function rename($server, $user, $password, $current_filename, $new_filename, $port = 22)
+    public function rename($currentFilename, $newFilename)
     {
         $renamed = false;
 
         try {
-            if (false !== $sftp = Sftp::login($server, $user, $password, $port)) {
-                if ($sftp->rename($current_filename, $new_filename)) {
-                    $renamed = true;
-                }
+            if ($this->sftp->rename($currentFilename, $newFilename)) {
+                $renamed = true;
             }
         } catch (Exception $e) {
             error_log("Sftp::rename : " . $e->getMessage());
@@ -473,24 +405,16 @@ class Sftp
     /**
      * Create a directory on remote SFTP server
      *
-     * @param string $server
-     * @param string $user
-     * @param string $password
      * @param string $directory
-     * @param int $port
-     *
      * @return bool $created
-     *
      */
-    public static function mkdir($server, $user, $password, $directory, $port = 22)
+    public function mkdir($directory)
     {
         $created = false;
 
         try {
-            if (false !== $sftp = Sftp::login($server, $user, $password, $port)) {
-                if ($sftp->mkdir($directory, true)) {
-                    $created = true;
-                }
+            if ($this->sftp->mkdir($directory, true)) {
+                $created = true;
             }
         } catch (Exception $e) {
             error_log("Sftp::mkdir : " . $e->getMessage());
@@ -502,30 +426,23 @@ class Sftp
     /**
      * Create and fill in a file on remote SFTP server
      *
-     * @param string $server
-     * @param string $user
-     * @param string $password
-     * @param string $remote_file
-     * @param int $port
-     *
+     * @param $remoteFile
+     * @param string $content
      * @return bool $content
-     *
      */
-    public static function touch($server, $user, $password, $remote_file, $content = '', $port = 22)
+    public function touch($remoteFile, $content = '')
     {
         $created = false;
 
         try {
-            if (false !== $sftp = Sftp::login($server, $user, $password, $port)) {
-                # Create temp file
-                $local_file = tmpfile();
-                fwrite($local_file, $content);
-                fseek($local_file, 0);
-                if ($sftp->put($remote_file, $local_file, SecFtp::SOURCE_LOCAL_FILE)) {
-                    $created = true;
-                }
-                fclose($local_file);
+            # Create temp file
+            $local_file = tmpfile();
+            fwrite($local_file, $content);
+            fseek($local_file, 0);
+            if ($this->sftp->put($remoteFile, $local_file, SecFtp::SOURCE_LOCAL_FILE)) {
+                $created = true;
             }
+            fclose($local_file);
         } catch (Exception $e) {
             error_log("Sftp::touch : " . $e->getMessage());
         }
@@ -546,15 +463,13 @@ class Sftp
      * @return bool $uploaded
      *
      */
-    public static function upload($server, $user, $password, $local_file, $remote_file, $port = 22)
+    public function upload($server, $user, $password, $local_file, $remote_file, $port = 22)
     {
         $uploaded = false;
 
         try {
-            if (false !== $sftp = Sftp::login($server, $user, $password, $port)) {
-                if ($sftp->put($remote_file, $local_file, SecFtp::SOURCE_LOCAL_FILE)) {
-                    $uploaded = true;
-                }
+            if ($this->sftp->put($remote_file, $local_file, SecFtp::SOURCE_LOCAL_FILE)) {
+                $uploaded = true;
             }
         } catch (Exception $e) {
             error_log("Sftp::upload : " . $e->getMessage());
@@ -575,13 +490,9 @@ class Sftp
      * @return array $files Files listed in directory or false
      *
      */
-    public static function scandir($server, $user, $password, $path, $port = 22)
+    public function scandir($server, $user, $password, $path, $port = 22)
     {
-        $files = false;
-
-        if (false !== $sftp = Sftp::login($server, $user, $password, $port)) {
-            $files = $sftp->nlist($path);
-        }
+        $files = $this->sftp->nlist($path);
         if (is_array($files)) {
             # Removes . and ..
             $files = array_diff($files, ['.', '..']);
@@ -593,23 +504,11 @@ class Sftp
     /**
      * Get default login SFTP directory aka pwd
      *
-     * @param string $server
-     * @param string $user
-     * @param string $password
-     * @param int $port
-     *
      * @return string $dir Print Working Directory or false
-     *
      */
-    public static function pwd($server, $user, $password, $port = 22)
+    public function pwd()
     {
-        $dir = false;
-
-        if (false !== $sftp = Sftp::login($server, $user, $password, $port)) {
-            $dir = $sftp->pwd();
-        }
-
-        return $dir;
+        return $this->sftp->pwd();
     }
 
 }
