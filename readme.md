@@ -1,9 +1,6 @@
 # php-sftp
 
 PHP SFTP Utilities
-
-If you also need FTP : [php-ftp](https://github.com/hugsbrugs/php-ftp)
-
 ## Dependencies :
 
 phpseclib : [Github](https://github.com/phpseclib/phpseclib) - [Documentation](https://api.phpseclib.org/master/) - [Examples](http://phpseclib.sourceforge.net/sftp/examples.html)
@@ -12,13 +9,13 @@ phpseclib : [Github](https://github.com/phpseclib/phpseclib) - [Documentation](h
 
 Install package with composer
 ```
-composer require hugsbrugs/php-sftp
+composer require webikevn/sftp
 ```
 
 In your PHP code, load librairy
 ```php
 require_once __DIR__ . '/vendor/autoload.php';
-use Hug\Sftp\Sftp as Sftp;
+use Webike\Sftp\Sftp as Sftp;
 ```
 
 ## Usage
