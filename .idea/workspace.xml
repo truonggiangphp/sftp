@@ -12,7 +12,7 @@
   <component name="ChangeListManager">
     <list default="true" id="564f560f-1058-4e04-bf9a-38a421a079fd" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/composer.json" beforeDir="false" afterPath="$PROJECT_DIR$/composer.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Webike/Sftp/Sftp.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Webike/Sftp/Sftp.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,7 +51,8 @@
       <updated>1597983241036</updated>
       <workItem from="1597983242134" duration="665000" />
       <workItem from="1597984536845" duration="117000" />
-      <workItem from="1597987308559" duration="1188000" />
+      <workItem from="1597987308559" duration="1240000" />
+      <workItem from="1597988806077" duration="6000" />
     </task>
     <servers />
   </component>

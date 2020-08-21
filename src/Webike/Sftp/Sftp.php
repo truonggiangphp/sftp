@@ -60,7 +60,7 @@ class Sftp
     {
         $isFile = false;
         try {
-            $isFile = $this->sftp->isFile($remoteFile);
+            $isFile = $this->sftp->is_file($remoteFile);
         } catch (Exception $e) {
             error_log("Sftp::is_file : " . $e->getMessage());
         }
