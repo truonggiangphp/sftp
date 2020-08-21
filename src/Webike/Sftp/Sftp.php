@@ -3,6 +3,14 @@
 namespace Webike\Sftp;
 
 use Exception;
+use Webike\Exceptions\DeleteFileException;
+use Webike\Exceptions\DownloadAllException;
+use Webike\Exceptions\DownloadDirException;
+use Webike\Exceptions\FileException;
+use Webike\Exceptions\LoginException;
+use Webike\Exceptions\RemoveDirException;
+use Webike\Exceptions\UploadAllException;
+use Webike\Exceptions\UploadDirException;
 use Webike\WString\WString as WString;
 use phpseclib\Net\SFTP as SecFtp;
 
@@ -19,6 +27,7 @@ class Sftp
      * @param string $password
      * @param int $port
      * @return self
+     * @throws LoginException
      */
     public function login($server, $user, $password, $port = 22)
     {
@@ -28,7 +37,7 @@ class Sftp
                 $this->sftp = false;
             }
         } catch (Exception $e) {
-            error_log("SFtp::login : " . $e->getMessage());
+            throw new LoginException($e);
         }
 
         return $this;
@@ -43,6 +52,7 @@ class Sftp
      *
      * @param int $port
      * @return bool
+     * @throws LoginException
      */
     public function test($server, $user, $password, $port = 22)
     {
@@ -55,17 +65,15 @@ class Sftp
      *
      * @param string $remoteFile
      * @return bool $is_file
+     * @throws FileException
      */
     public function isFile($remoteFile)
     {
-        $isFile = false;
         try {
-            $isFile = $this->sftp->is_file($remoteFile);
+            return $this->sftp->is_file($remoteFile);
         } catch (Exception $e) {
-            error_log("Sftp::is_file : " . $e->getMessage());
+            throw new FileException($e);
         }
-
-        return $isFile;
     }
 
     /**
@@ -73,6 +81,7 @@ class Sftp
      *
      * @param $remoteFile
      * @return bool $deleted
+     * @throws DeleteFileException
      */
     public function delete($remoteFile)
     {
@@ -83,7 +92,7 @@ class Sftp
                 $deleted = $this->sftp->delete($remoteFile);
             }
         } catch (Exception $e) {
-            error_log("Sft::delete : " . $e->getMessage());
+            throw new DeleteFileException($e);
         }
 
         return $deleted;
@@ -97,6 +106,7 @@ class Sftp
      *
      * @param $remotePath
      * @return bool $deleted
+     * @throws RemoveDirException
      */
     public function rmdir($remotePath)
     {
@@ -116,7 +126,7 @@ class Sftp
                 }
             }
         } catch (Exception $e) {
-            error_log("Sftp::rmdir : " . $e->getMessage());
+            throw new RemoveDirException($e);
         }
 
         return $deleted;
@@ -198,6 +208,7 @@ class Sftp
      * @param $localPath
      * @param $remotePath
      * @return bool $uploaded
+     * @throws UploadDirException
      */
     public function uploadDir($localPath, $remotePath)
     {
@@ -217,7 +228,7 @@ class Sftp
                 $uploaded = Sftp::uploadAll($this->sftp, $localPath, $remotePath);
             }
         } catch (Exception $e) {
-            error_log("Sftp::upload_dir : " . $e->getMessage());
+            throw new UploadDirException($e);
         }
 
         return $uploaded;
@@ -230,6 +241,7 @@ class Sftp
      * @param $localDir
      * @param $remoteDir
      * @return bool $uploaded_all
+     * @throws UploadAllException
      */
     private static function uploadAll($sftp, $localDir, $remoteDir)
     {
@@ -276,7 +288,7 @@ class Sftp
                 $uploadedAll = true;
             }
         } catch (Exception $e) {
-            error_log("Sftp::upload_all : " . $e->getMessage());
+            throw new UploadAllException($e);
         }
 
         return $uploadedAll;
@@ -288,6 +300,7 @@ class Sftp
      * @param $remoteFile
      * @param $localFile
      * @return bool $downloaded
+     * @throws FileException
      */
     public function download($remoteFile, $localFile)
     {
@@ -299,7 +312,7 @@ class Sftp
                 $downloaded = true;
             }
         } catch (Exception $e) {
-            error_log("Sftp::download : " . $e->getMessage());
+            throw new FileException($e);
         }
 
         return $downloaded;
@@ -314,11 +327,11 @@ class Sftp
      * @param $remoteDir
      * @param $localDir
      * @return bool $downloaded
+     * @throws DownloadDirException
      */
     public function downloadDir($remoteDir, $localDir)
     {
         $downloaded = false;
-
         try {
             if (is_dir($localDir) && is_writable($localDir)) {
                 # If remote_dir do not ends with /
@@ -337,7 +350,7 @@ class Sftp
                 throw new Exception("Local directory does not exist or is not writable", 1);
             }
         } catch (Exception $e) {
-            error_log("Sftp::download_dir : " . $e->getMessage());
+            throw new DownloadDirException($e);
         }
 
         return $downloaded;
@@ -352,6 +365,7 @@ class Sftp
      *
      * @return bool $downloaded
      *
+     * @throws DownloadAllException
      */
     private static function downloadAll($sftp, $remote_dir, $local_dir)
     {
@@ -397,7 +411,7 @@ class Sftp
                 }
             }
         } catch (Exception $e) {
-            error_log("Sftp::download_all : " . $e->getMessage());
+            throw new DownloadAllException($e);
         }
 
         return $download_all;
@@ -409,6 +423,7 @@ class Sftp
      * @param $currentFilename
      * @param $newFilename
      * @return bool $renamed
+     * @throws FileException
      */
     public function rename($currentFilename, $newFilename)
     {
@@ -419,7 +434,7 @@ class Sftp
                 $renamed = true;
             }
         } catch (Exception $e) {
-            error_log("Sftp::rename : " . $e->getMessage());
+            throw new FileException($e);
         }
 
         return $renamed;
@@ -430,6 +445,7 @@ class Sftp
      *
      * @param string $directory
      * @return bool $created
+     * @throws FileException
      */
     public function mkdir($directory)
     {
@@ -440,7 +456,7 @@ class Sftp
                 $created = true;
             }
         } catch (Exception $e) {
-            error_log("Sftp::mkdir : " . $e->getMessage());
+            throw new FileException($e);
         }
 
         return $created;
@@ -452,6 +468,7 @@ class Sftp
      * @param $remoteFile
      * @param string $content
      * @return bool $content
+     * @throws FileException
      */
     public function touch($remoteFile, $content = '')
     {
@@ -467,7 +484,7 @@ class Sftp
             }
             fclose($local_file);
         } catch (Exception $e) {
-            error_log("Sftp::touch : " . $e->getMessage());
+            throw new FileException($e);
         }
 
         return $created;
@@ -476,26 +493,22 @@ class Sftp
     /**
      * Upload a file on SFTP server
      *
-     * @param string $server
-     * @param string $user
-     * @param string $password
-     * @param string $local_file
-     * @param string $remote_file
-     * @param int $port
-     *
+     * @param $localFile
+     * @param $remoteFile
      * @return bool $uploaded
      *
+     * @throws FileException
      */
-    public function upload($server, $user, $password, $local_file, $remote_file, $port = 22)
+    public function upload($localFile, $remoteFile)
     {
         $uploaded = false;
 
         try {
-            if ($this->sftp->put($remote_file, $local_file, SecFtp::SOURCE_LOCAL_FILE)) {
+            if ($this->sftp->put($remoteFile, $localFile, SecFtp::SOURCE_LOCAL_FILE)) {
                 $uploaded = true;
             }
         } catch (Exception $e) {
-            error_log("Sftp::upload : " . $e->getMessage());
+            throw new FileException($e);
         }
 
         return $uploaded;
@@ -504,16 +517,10 @@ class Sftp
     /**
      * List files in given directory on SFTP server
      *
-     * @param string $server
-     * @param string $user
-     * @param string $password
      * @param string $path
-     * @param int $port
-     *
      * @return array $files Files listed in directory or false
-     *
      */
-    public function scandir($server, $user, $password, $path, $port = 22)
+    public function scandir($path)
     {
         $files = $this->sftp->nlist($path);
         if (is_array($files)) {
