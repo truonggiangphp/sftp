@@ -184,6 +184,9 @@ class Sftp
     {
         $files = [];
         $list = $this->sftp->nlist($remotePath);
+        if (!$list) {
+            return $files;
+        }
         foreach ($list as $element) {
             if ($element !== '.' && $element !== '..') {
                 if ($this->sftp->is_dir($remotePath . DIRECTORY_SEPARATOR . $element)) {
