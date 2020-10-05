@@ -301,19 +301,15 @@ class Sftp
      * Download a file from remote SFTP server
      *
      * @param $remoteFile
-     * @param $localFile
      * @return bool $downloaded
      * @throws FileException
      */
-    public function download($remoteFile, $localFile)
+    public function download($remoteFile)
     {
         $downloaded = false;
-
         try {
             # Download File
-            if ($this->sftp->get($remoteFile, $localFile)) {
-                $downloaded = true;
-            }
+            return $this->sftp->get($remoteFile);
         } catch (Exception $e) {
             throw new FileException($e);
         }
