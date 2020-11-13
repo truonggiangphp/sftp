@@ -253,7 +253,7 @@ class Sftp
             # Create remote directory
             if (!$sftp->is_dir($remoteDir)) {
                 if (!$sftp->mkdir($remoteDir)) {
-                    throw new Exception("Cannot create remote directory.", 1);
+                    throw new Exception("Cannot create remote directory.". $remoteDir, 1);
                 }
             }
 
